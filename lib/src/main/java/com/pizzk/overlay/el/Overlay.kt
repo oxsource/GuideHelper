@@ -3,7 +3,6 @@ package com.pizzk.overlay.el
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 
-
 class Overlay(val anchors: List<Anchor>, val markers: List<Marker>) {
 
     class Builder {
@@ -33,6 +32,11 @@ class Overlay(val anchors: List<Anchor>, val markers: List<Marker>) {
     fun anchor(@IdRes id: Int, draw: Anchor.Draw) {
         val anchor = anchors.find { it.id == id } ?: return
         anchor.draw = draw
+    }
+
+    fun anchor(@IdRes id: Int, find: Anchor.Find) {
+        val anchor = anchors.find { it.id == id } ?: return
+        anchor.find = find
     }
 
     fun marker(@LayoutRes id: Int, layout: Marker.Layout) {

@@ -12,7 +12,7 @@ class Marker(
     @IdRes
     val anchor: Int
 ) {
-    var layout: Layout = delegateLayout
+    internal var layout: Layout = delegateLayout
 
     interface Layout {
         fun onLayout(cs: ConstraintSet, marker: View, anchor: View)

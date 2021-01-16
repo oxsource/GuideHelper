@@ -1,10 +1,13 @@
 package com.pizzk.overlay.app
 
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
+import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.pizzk.overlay.*
 import com.pizzk.overlay.el.Anchor
 import com.pizzk.overlay.el.Marker
@@ -16,17 +19,19 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        val rv: RecyclerView = findViewById(R.id.vRecycler)
+        rv.layoutManager = LinearLayoutManager(baseContext)
+        rv.adapter = ListAdapter()
+        //
         val vOverlay: OverlayLayout = findViewById(R.id.vOverlay)
         vOverlay.setMaskColor(R.color.overlay_mask)
         vOverlay.setVisibility(false)
         adapter.with(vOverlay)
         findViewById<View>(R.id.tv1).setOnClickListener {
-            Toast.makeText(baseContext, "TV1 clicked", Toast.LENGTH_SHORT).show()
             buildMultiOverlay()
             adapter.next()
         }
         findViewById<View>(R.id.tv2).setOnClickListener {
-            Toast.makeText(baseContext, "TV2 clicked", Toast.LENGTH_SHORT).show()
             buildMultiAnchor()
             adapter.next()
         }
@@ -34,12 +39,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildMultiOverlay() {
         val overlay1 = Overlay.Builder()
-            .anchor(Anchor.rect(R.id.tv1, radius = 10, inset = 10))
+            .anchor(Anchor.rect(R.id.tv1, radius = 10, outset = 10))
             .marker(R.layout.tv1_marker)
             .build()
         overlay1.marker(R.layout.tv1_marker, m1Layout)
         val overlay2 = Overlay.Builder()
-            .anchor(Anchor.circle(R.id.tv2, inset = 30))
+            .anchor(Anchor.circle(R.id.tv2, outset = 30))
             .marker(R.layout.tv2_marker)
             .build()
         overlay2.marker(R.layout.tv2_marker, m2Layout)
@@ -48,14 +53,23 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildMultiAnchor() {
         val overlay = Overlay.Builder()
-            .anchor(Anchor.rect(R.id.tv1, radius = 10, inset = 5))
+            .anchor(Anchor.rect(R.id.tv1, radius = 10, outset = 5))
             .marker(R.layout.tv1_marker)
-            .anchor(Anchor.circle(R.id.tv2, inset = 20))
+            .anchor(Anchor.circle(R.id.tv2, outset = 20))
             .marker(R.layout.tv2_marker)
+            //
+            .anchor(Anchor.rect(R.id.vRecycler, radius = 10, outset = 5))
             .build()
         overlay.marker(R.layout.tv1_marker, m1Layout)
         overlay.marker(R.layout.tv2_marker, m2Layout)
-        adapter.overlays(listOf(overlay))
+        //特殊情况：从RecyclerView中获取定位子元素，不能使用使用常规的findViewById
+        overlay.anchor(R.id.vRecycler, object : Anchor.Find {
+            override fun onFind(parent: ViewGroup, id: Int): View? {
+                val v: ViewGroup? = findViewById(id)
+                return v?.getChildAt(2)
+            }
+        })
+        adapter.overlays(overlay)
     }
 
     private val m1Layout: Marker.MarkerLayout = object : Marker.MarkerLayout() {
@@ -76,5 +90,22 @@ class MainActivity : AppCompatActivity() {
             connect(ConstraintSet.TOP, ConstraintSet.BOTTOM, 20)
             setParentClickListener { adapter.next() }
         }
+    }
+
+    private class ListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        private val colors: List<Int> = listOf(Color.RED, Color.GREEN, Color.BLUE)
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            val v = View(parent.context)
+            val lp = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 200)
+            v.layoutParams = lp
+            return object : RecyclerView.ViewHolder(v) {}
+        }
+
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            holder.itemView.setBackgroundColor(colors[position % colors.size])
+        }
+
+        override fun getItemCount(): Int = 4
     }
 }

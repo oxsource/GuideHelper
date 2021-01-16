@@ -73,7 +73,7 @@ class OverlayLayout : ConstraintLayout {
         //
         val lf = LayoutInflater.from(viewGroup.context)
         overlay.anchors.forEach { e: Anchor ->
-            val vAnchor: View = viewGroup.findViewById(e.id)
+            val vAnchor: View = e.find.onFind(viewGroup, e.id) ?: return@forEach
             //计算宽度及位置
             vAnchor.getLocationOnScreen(vAnchorXY)
             rect.left = vAnchorXY[0] - vXY[0] - 0f
@@ -81,8 +81,8 @@ class OverlayLayout : ConstraintLayout {
             rect.right = rect.left + vAnchor.width
             rect.bottom = rect.top + vAnchor.height
             //镂空样式
-            val inset = e.inset.toFloat()
-            rect.inset(-inset, -inset)
+            val outset = e.outset.toFloat()
+            rect.inset(-outset, -outset)
             //锚点生产及绘制
             e.draw.onDraw(canvas, paint, e, rect)
             val anchor = onFakeAnchor(e.id, rect.toRect())

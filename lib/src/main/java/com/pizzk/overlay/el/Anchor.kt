@@ -3,6 +3,8 @@ package com.pizzk.overlay.el
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
+import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.IdRes
 
 /**
@@ -13,15 +15,23 @@ class Anchor(
     val id: Int,
     val radius: Int,
     val circle: Boolean,
-    val inset: Int
+    val outset: Int
 ) {
-    var draw: Draw = delegateDraw
+    internal var draw: Draw = delegateDraw
+    internal var find: Find = delegateFind
 
     /**
      * 锚点绘制接口
      */
     interface Draw {
         fun onDraw(canvas: Canvas, paint: Paint, e: Anchor, rect: RectF)
+    }
+
+    /**
+     * 锚点查找接口，默认使用findViewById，可自定义实现查找匹配
+     */
+    interface Find {
+        fun onFind(parent: ViewGroup, @IdRes id: Int): View?
     }
 
     /**
@@ -46,21 +56,28 @@ class Anchor(
         }
     }
 
+    class AnchorFind : Find {
+        override fun onFind(parent: ViewGroup, @IdRes id: Int): View? {
+            return parent.findViewById(id)
+        }
+    }
+
     companion object {
         private val delegateDraw: Draw by lazy { AnchorDraw() }
+        private val delegateFind: Find by lazy { AnchorFind() }
 
         /**
          * 构建矩形锚点
          */
-        fun rect(@IdRes id: Int, radius: Int = 0, inset: Int = 0): Anchor {
-            return Anchor(id, radius, circle = false, inset)
+        fun rect(@IdRes id: Int, radius: Int = 0, outset: Int = 0): Anchor {
+            return Anchor(id, radius, circle = false, outset)
         }
 
         /**
          * 构建圆形锚点
          */
-        fun circle(@IdRes id: Int, inset: Int = 0): Anchor {
-            return Anchor(id, radius = 0, circle = true, inset)
+        fun circle(@IdRes id: Int, outset: Int = 0): Anchor {
+            return Anchor(id, radius = 0, circle = true, outset)
         }
     }
 }
