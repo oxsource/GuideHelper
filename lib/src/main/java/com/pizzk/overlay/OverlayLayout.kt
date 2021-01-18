@@ -68,7 +68,6 @@ class OverlayLayout : ConstraintLayout {
         val vXY = IntArray(2)
         getLocationOnScreen(vXY)
         val vAnchorXY = IntArray(2)
-        //
         overlay.anchors.forEach { e: Anchor ->
             val vAnchor: View = e.find.onFind(viewGroup, e) ?: return@forEach
             //计算宽度及位置
@@ -82,23 +81,24 @@ class OverlayLayout : ConstraintLayout {
             rect.inset(-outset, -outset)
             //锚点生产及绘制
             e.draw.onDraw(canvas, paint, e, rect)
-            val anchor = onFakeAnchor(e.id, rect.toRect())
+            val anchor = onFakeAnchor(e.id, rect)
             //标记层布局
             val markers = overlay.markers.filter { it.anchor == e.id }
             markers.forEach { onLayoutMarker(viewGroup.context, it, anchor) }
         }
     }
 
-    private fun onFakeAnchor(id: Int, rc: Rect): View {
+    private fun onFakeAnchor(id: Int, rc: RectF): View {
         val v: View? = getViewById(id)
         if (null != v) return v
         val view = View(context)
         view.id = id
-        addView(view, rc.width(), rc.height())
+        addView(view, rc.width().toInt(), rc.height().toInt())
         val cs = ConstraintSet()
         cs.clone(this)
-        cs.connect(id, ConstraintSet.START, ConstraintSet.PARENT_ID, ConstraintSet.START, rc.left)
-        cs.connect(id, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP, rc.top)
+        val iid = ConstraintSet.PARENT_ID
+        cs.connect(id, ConstraintSet.START, iid, ConstraintSet.START, rc.left.toInt())
+        cs.connect(id, ConstraintSet.TOP, iid, ConstraintSet.TOP, rc.top.toInt())
         cs.applyTo(this)
         return view
     }
