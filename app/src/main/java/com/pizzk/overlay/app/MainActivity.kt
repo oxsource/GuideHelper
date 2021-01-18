@@ -39,12 +39,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildMultiOverlay() {
         val overlay1 = Overlay.Builder()
-            .anchor(Anchor.rect(R.id.tv1, radius = 10, outset = 10))
+            .anchor(Anchor.rect(R.id.tv1, 10, 10))
             .marker(R.layout.tv1_marker)
             .build()
         overlay1.marker(R.layout.tv1_marker, m1Layout)
         val overlay2 = Overlay.Builder()
-            .anchor(Anchor.circle(R.id.tv2, outset = 30))
+            .anchor(Anchor.circle(R.id.tv2, 30))
             .marker(R.layout.tv2_marker)
             .build()
         overlay2.marker(R.layout.tv2_marker, m2Layout)
@@ -53,12 +53,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildMultiAnchor() {
         val overlay = Overlay.Builder()
-            .anchor(Anchor.rect(R.id.tv1, radius = 10, outset = 5))
+            .anchor(Anchor.rect(R.id.tv1, 10, 5))
             .marker(R.layout.tv1_marker)
-            .anchor(Anchor.circle(R.id.tv2, outset = 20))
+            .anchor(Anchor.circle(R.id.tv2, 20))
             .marker(R.layout.tv2_marker)
             //
-            .anchor(Anchor.rect(R.id.vRecycler, radius = 10, outset = 5))
+            .anchor(Anchor.rect(R.id.vRecycler, 10, 5))
             .marker(R.id.vRecycler, Marker.iv(baseContext, R.mipmap.ic_launcher))
             .build()
         overlay.marker(R.layout.tv1_marker, m1Layout)
@@ -66,8 +66,8 @@ class MainActivity : AppCompatActivity() {
         overlay.marker(R.id.vRecycler, object : Marker.MarkerLayout() {
             override fun onLayout(cs: ConstraintSet, marker: View, anchor: View) {
                 super.onLayout(cs, marker, anchor)
-                connect(ConstraintSet.START)
-                connect(ConstraintSet.END)
+                connect(ConstraintSet.START, 0)
+                connect(ConstraintSet.END, 0)
                 connect(ConstraintSet.BOTTOM, ConstraintSet.TOP, 10)
             }
         })
@@ -84,8 +84,8 @@ class MainActivity : AppCompatActivity() {
     private val m1Layout: Marker.MarkerLayout = object : Marker.MarkerLayout() {
         override fun onLayout(cs: ConstraintSet, marker: View, anchor: View) {
             super.onLayout(cs, marker, anchor)
-            connect(ConstraintSet.START)
-            connect(ConstraintSet.END)
+            connect(ConstraintSet.START, 0)
+            connect(ConstraintSet.END, 0)
             connect(ConstraintSet.TOP, ConstraintSet.BOTTOM, 20)
             setClickListener(R.id.btNext) { adapter.next() }
         }
@@ -94,8 +94,8 @@ class MainActivity : AppCompatActivity() {
     private val m2Layout: Marker.MarkerLayout = object : Marker.MarkerLayout() {
         override fun onLayout(cs: ConstraintSet, marker: View, anchor: View) {
             super.onLayout(cs, marker, anchor)
-            connect(ConstraintSet.START)
-            connect(ConstraintSet.END)
+            connect(ConstraintSet.START, 0)
+            connect(ConstraintSet.END, 0)
             connect(ConstraintSet.TOP, ConstraintSet.BOTTOM, 20)
             setParentClickListener { adapter.next() }
         }
