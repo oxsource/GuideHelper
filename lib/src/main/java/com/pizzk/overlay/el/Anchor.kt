@@ -56,7 +56,7 @@ class Anchor(
         }
     }
 
-    class AnchorFind : Find {
+    open class AnchorFind : Find {
         override fun onFind(parent: ViewGroup, @IdRes id: Int): View? {
             return parent.findViewById(id)
         }

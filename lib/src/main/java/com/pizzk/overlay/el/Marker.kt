@@ -1,7 +1,6 @@
 package com.pizzk.overlay.el
 
 import android.view.View
-import androidx.annotation.CallSuper
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import androidx.constraintlayout.widget.ConstraintSet
@@ -26,7 +25,6 @@ class Marker(
         private var marker: View? = null
         private var anchor: View? = null
 
-        @CallSuper
         override fun onLayout(cs: ConstraintSet, marker: View, anchor: View) {
             this.cs = cs
             this.marker = marker
