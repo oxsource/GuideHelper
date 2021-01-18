@@ -3,11 +3,9 @@ package com.pizzk.overlay
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorRes
-import androidx.annotation.IdRes
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
@@ -71,9 +69,8 @@ class OverlayLayout : ConstraintLayout {
         getLocationOnScreen(vXY)
         val vAnchorXY = IntArray(2)
         //
-        val lf = LayoutInflater.from(viewGroup.context)
         overlay.anchors.forEach { e: Anchor ->
-            val vAnchor: View = e.find.onFind(viewGroup, e.id) ?: return@forEach
+            val vAnchor: View = e.find.onFind(viewGroup, e) ?: return@forEach
             //计算宽度及位置
             vAnchor.getLocationOnScreen(vAnchorXY)
             rect.left = vAnchorXY[0] - vXY[0] - 0f
@@ -88,11 +85,11 @@ class OverlayLayout : ConstraintLayout {
             val anchor = onFakeAnchor(e.id, rect.toRect())
             //标记层布局
             val markers = overlay.markers.filter { it.anchor == e.id }
-            markers.forEach { onLayoutMarker(lf, it, anchor) }
+            markers.forEach { onLayoutMarker(viewGroup.context, it, anchor) }
         }
     }
 
-    private fun onFakeAnchor(@IdRes id: Int, rc: Rect): View {
+    private fun onFakeAnchor(id: Int, rc: Rect): View {
         val v: View? = getViewById(id)
         if (null != v) return v
         val view = View(context)
@@ -106,9 +103,9 @@ class OverlayLayout : ConstraintLayout {
         return view
     }
 
-    private fun onLayoutMarker(lf: LayoutInflater, marker: Marker, anchor: View) {
-        val v: View = lf.inflate(marker.id, null)
-        if (v.id <= 0) v.id = marker.id + 0
+    private fun onLayoutMarker(context: Context, marker: Marker, anchor: View) {
+        val v: View = marker.make.onMake(context, marker) ?: return
+        if (v.id <= 0) v.id = marker.id + marker.hashCode()
         addView(v)
         val cs = ConstraintSet()
         cs.clone(this)

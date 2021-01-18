@@ -59,13 +59,22 @@ class MainActivity : AppCompatActivity() {
             .marker(R.layout.tv2_marker)
             //
             .anchor(Anchor.rect(R.id.vRecycler, radius = 10, outset = 5))
+            .marker(R.id.vRecycler, Marker.iv(baseContext, R.mipmap.ic_launcher))
             .build()
         overlay.marker(R.layout.tv1_marker, m1Layout)
         overlay.marker(R.layout.tv2_marker, m2Layout)
+        overlay.marker(R.id.vRecycler, object : Marker.MarkerLayout() {
+            override fun onLayout(cs: ConstraintSet, marker: View, anchor: View) {
+                super.onLayout(cs, marker, anchor)
+                connect(ConstraintSet.START)
+                connect(ConstraintSet.END)
+                connect(ConstraintSet.BOTTOM, ConstraintSet.TOP, 10)
+            }
+        })
         //特殊情况：从RecyclerView中获取定位子元素，不能使用使用常规的findViewById
         overlay.anchor(R.id.vRecycler, object : Anchor.Find {
-            override fun onFind(parent: ViewGroup, id: Int): View? {
-                val v: ViewGroup? = findViewById(id)
+            override fun onFind(parent: ViewGroup, e: Anchor): View? {
+                val v: ViewGroup? = findViewById(e.id)
                 return v?.getChildAt(2)
             }
         })
