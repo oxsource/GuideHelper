@@ -25,10 +25,8 @@ class OverlayAdapter {
         val view: OverlayLayout = view ?: return false
         if (overlays.isEmpty()) {
             view.setOverlay(null)
-            view.setVisibility(false)
             return false
         }
-        view.setVisibility(true)
         view.setOverlay(overlays.removeAt(0))
         return true
     }

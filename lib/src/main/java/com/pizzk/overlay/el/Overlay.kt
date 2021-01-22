@@ -35,23 +35,13 @@ class Overlay(val anchors: List<Anchor>, val markers: List<Marker>) {
         fun build(): Overlay = Overlay(anchors, markers)
     }
 
-    fun anchor(id: Int, draw: Anchor.Draw) {
+    fun anchor(id: Int, delegate: Anchor.Delegate) {
         val anchor = anchors.find { it.id == id } ?: return
-        anchor.draw = draw
+        anchor.delegate = delegate
     }
 
-    fun anchor(id: Int, find: Anchor.Find) {
-        val anchor = anchors.find { it.id == id } ?: return
-        anchor.find = find
-    }
-
-    fun marker(id: Int, layout: Marker.Layout) {
+    fun marker(id: Int, delegate: Marker.Delegate) {
         val marker = markers.find { it.id == id } ?: return
-        marker.layout = layout
-    }
-
-    fun marker(id: Int, make: Marker.Make) {
-        val marker = markers.find { it.id == id } ?: return
-        marker.make = make
+        marker.delegate = delegate
     }
 }

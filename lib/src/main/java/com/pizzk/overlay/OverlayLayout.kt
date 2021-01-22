@@ -9,7 +9,6 @@ import androidx.annotation.ColorRes
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.toRect
 import com.pizzk.overlay.el.Anchor
 import com.pizzk.overlay.el.Marker
 import com.pizzk.overlay.el.Overlay
@@ -45,19 +44,20 @@ class OverlayLayout : ConstraintLayout {
     fun setOverlay(overlay: Overlay?) {
         removeAllViews()
         setOnClickListener(null)
+        setVisibility(null != overlay)
         overlay ?: return
         val view: ViewGroup = parent as? ViewGroup ?: return
         //@formatter:off
-        post { try { onChangeLayout(view, overlay) } catch (e: Exception) { e.printStackTrace() } }
+        post { try { react(view, overlay) } catch (e: Exception) { e.printStackTrace() } }
         //@formatter:on
     }
 
-    fun setVisibility(v: Boolean) {
+    private fun setVisibility(v: Boolean) {
         if (v == (View.VISIBLE == visibility)) return
         visibility = if (v) View.VISIBLE else View.GONE
     }
 
-    private fun onChangeLayout(viewGroup: ViewGroup, overlay: Overlay) {
+    private fun react(viewGroup: ViewGroup, overlay: Overlay) {
         //准备画布
         bitmap = bitmap ?: Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val bmp = bitmap ?: return
@@ -65,51 +65,54 @@ class OverlayLayout : ConstraintLayout {
         val canvas = Canvas(bmp)
         canvas.drawColor(maskColor)
         //计算位置
-        val vXY = IntArray(2)
-        getLocationOnScreen(vXY)
-        val vAnchorXY = IntArray(2)
+        val xy = IntArray(2)
+        getLocationOnScreen(xy)
+        val left = xy[0].toFloat()
+        val top = xy[1].toFloat()
         overlay.anchors.forEach { e: Anchor ->
-            val vAnchor: View = e.find.onFind(viewGroup, e) ?: return@forEach
+            val vFind: View = e.delegate.onFind(e, viewGroup) ?: return@forEach
             //计算宽度及位置
-            vAnchor.getLocationOnScreen(vAnchorXY)
-            rect.left = vAnchorXY[0] - vXY[0] - 0f
-            rect.top = vAnchorXY[1] - vXY[1] - 0f
-            rect.right = rect.left + vAnchor.width
-            rect.bottom = rect.top + vAnchor.height
+            vFind.getLocationOnScreen(xy)
+            rect.left = xy[0] - left
+            rect.top = xy[1] - top
+            rect.right = rect.left + vFind.width
+            rect.bottom = rect.top + vFind.height
             //镂空样式
             val outset = e.outset.toFloat()
             rect.inset(-outset, -outset)
             //锚点生产及绘制
-            e.draw.onDraw(canvas, paint, e, rect)
-            val anchor = onFakeAnchor(e.id, rect)
+            e.delegate.onDraw(e, canvas, paint, rect)
+            val vAnchor = onSetupAnchor(e, rect)
             //标记层布局
             val markers = overlay.markers.filter { it.anchor == e.id }
-            markers.forEach { onLayoutMarker(viewGroup.context, it, anchor) }
+            markers.forEach { marker: Marker -> onSetupMarker(marker, vAnchor) }
         }
     }
 
-    private fun onFakeAnchor(id: Int, rc: RectF): View {
-        val v: View? = getViewById(id)
-        if (null != v) return v
-        val view = View(context)
+    private fun onSetupAnchor(e: Anchor, rc: RectF): View {
+        val id = e.id + e.hashCode()
+        val vExist: View? = getViewById(id)
+        if (null != vExist) return vExist
+        val view = e.delegate.onMake(context, e)
         view.id = id
         addView(view, rc.width().toInt(), rc.height().toInt())
         val cs = ConstraintSet()
         cs.clone(this)
-        val iid = ConstraintSet.PARENT_ID
-        cs.connect(id, ConstraintSet.START, iid, ConstraintSet.START, rc.left.toInt())
-        cs.connect(id, ConstraintSet.TOP, iid, ConstraintSet.TOP, rc.top.toInt())
+        e.delegate.onLayout(view, cs, rc)
         cs.applyTo(this)
         return view
     }
 
-    private fun onLayoutMarker(context: Context, marker: Marker, anchor: View) {
-        val v: View = marker.make.onMake(context, marker) ?: return
-        if (v.id <= 0) v.id = marker.id + marker.hashCode()
-        addView(v)
+    private fun onSetupMarker(e: Marker, vAnchor: View) {
+        val id = e.id + e.hashCode()
+        val vExist: View? = getViewById(id)
+        if (null != vExist) return
+        val view: View = e.delegate.onMake(context, e) ?: return
+        view.id = id
+        addView(view)
         val cs = ConstraintSet()
         cs.clone(this)
-        marker.layout.onLayout(cs, v, anchor)
+        e.delegate.onLayout(cs, view, vAnchor)
         cs.applyTo(this)
     }
 

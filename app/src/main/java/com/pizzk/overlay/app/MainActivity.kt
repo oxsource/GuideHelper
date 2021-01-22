@@ -25,7 +25,6 @@ class MainActivity : AppCompatActivity() {
         //
         val vOverlay: OverlayLayout = findViewById(R.id.vOverlay)
         vOverlay.setMaskColor(R.color.overlay_mask)
-        vOverlay.setVisibility(false)
         adapter.with(vOverlay)
         findViewById<View>(R.id.tv1).setOnClickListener {
             buildMultiOverlay()
@@ -58,22 +57,22 @@ class MainActivity : AppCompatActivity() {
             .anchor(Anchor.circle(R.id.tv2, outset = 20))
             .marker(R.layout.tv2_marker)
             //
-            .anchor(Anchor.rect(R.id.vRecycler, radius = 10, outset = 5))
+            .anchor(Anchor.rect(R.id.vRecycler, radius = 10))
             .marker(R.id.vRecycler, Marker.iv(baseContext, R.mipmap.ic_launcher))
             .build()
         overlay.marker(R.layout.tv1_marker, m1Layout)
         overlay.marker(R.layout.tv2_marker, m2Layout)
-        overlay.marker(R.id.vRecycler, object : Marker.MarkerLayout() {
+        overlay.marker(R.id.vRecycler, object : Marker.DelegateImpl() {
             override fun onLayout(cs: ConstraintSet, marker: View, anchor: View) {
                 super.onLayout(cs, marker, anchor)
-                connect(ConstraintSet.START)
-                connect(ConstraintSet.END)
-                connect(ConstraintSet.BOTTOM, ConstraintSet.TOP, 10)
+                csPatch.connect(ConstraintSet.BOTTOM, ConstraintSet.TOP, 10)
+                    .connect(ConstraintSet.START)
+                    .connect(ConstraintSet.END)
             }
         })
         //特殊情况：从RecyclerView中获取定位子元素，不能使用使用常规的findViewById
-        overlay.anchor(R.id.vRecycler, object : Anchor.Find {
-            override fun onFind(parent: ViewGroup, e: Anchor): View? {
+        overlay.anchor(R.id.vRecycler, object : Anchor.DelegateImpl() {
+            override fun onFind(e: Anchor, parent: ViewGroup): View? {
                 val v: ViewGroup? = findViewById(e.id)
                 return v?.getChildAt(2)
             }
@@ -81,22 +80,22 @@ class MainActivity : AppCompatActivity() {
         adapter.overlays(overlay)
     }
 
-    private val m1Layout: Marker.MarkerLayout = object : Marker.MarkerLayout() {
+    private val m1Layout: Marker.Delegate = object : Marker.DelegateImpl() {
         override fun onLayout(cs: ConstraintSet, marker: View, anchor: View) {
             super.onLayout(cs, marker, anchor)
-            connect(ConstraintSet.START)
-            connect(ConstraintSet.END)
-            connect(ConstraintSet.TOP, ConstraintSet.BOTTOM, 20)
+            csPatch.connect(ConstraintSet.START)
+                .connect(ConstraintSet.END)
+                .connect(ConstraintSet.TOP, ConstraintSet.BOTTOM, 20)
             setClickListener(R.id.btNext) { adapter.next() }
         }
     }
 
-    private val m2Layout: Marker.MarkerLayout = object : Marker.MarkerLayout() {
+    private val m2Layout: Marker.Delegate = object : Marker.DelegateImpl() {
         override fun onLayout(cs: ConstraintSet, marker: View, anchor: View) {
             super.onLayout(cs, marker, anchor)
-            connect(ConstraintSet.START)
-            connect(ConstraintSet.END)
-            connect(ConstraintSet.TOP, ConstraintSet.BOTTOM, 20)
+            csPatch.connect(ConstraintSet.START)
+                .connect(ConstraintSet.END)
+                .connect(ConstraintSet.TOP, ConstraintSet.BOTTOM, 20)
             setParentClickListener { adapter.next() }
         }
     }
